@@ -235,7 +235,7 @@ func updatePaymentsHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 
-	renderJson(w, r, struct{}{})
+	respondJson(w, r, struct{}{})
 }
 
 func deletePaymentsHandler(w http.ResponseWriter, r *http.Request) {
@@ -243,7 +243,7 @@ func deletePaymentsHandler(w http.ResponseWriter, r *http.Request) {
 		"sub_9sed4J2K4jurwS", // TODO: Cancel user's subscription
 	)
 
-	renderJson(w, r, struct{}{})
+	respondJson(w, r, struct{}{})
 }
 
 func putUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
@@ -293,17 +293,17 @@ func deleteUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 func showUserHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		vars   = mux.Vars(r)
-		userId = vars["userId"]
+		userID = vars["userId"]
 		user   User
 		err    error
 	)
 
-	if user.Id, err = strconv.ParseInt(userId, 10, 64); err != nil {
+	if user.Id, err = strconv.ParseInt(userID, 10, 64); err != nil {
 		respondJson(w, r, err)
 		return
 	}
 
-	if err = config.DB.Select(&user).Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers"); err != nil {
+	if err = config.DB.Model(&user).Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers").Select(); err != nil {
 		respondJson(w, r, err)
 		return
 	}
