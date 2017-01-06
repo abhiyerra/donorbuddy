@@ -201,6 +201,12 @@ func createPaymentsHandler(w http.ResponseWriter, r *http.Request) {
 		StripeToken string
 	}
 
+	customerParams := &stripe.CustomerParams{
+		Desc: "Customer for jacob.jackson@example.com",
+	}
+	customerParams.SetSource(plan.StripeToken) // obtained with Stripe.js
+	c, err := customer.New(customerParams)
+
 	s, err := sub.New(&stripe.SubParams{
 		Customer:  "cus_9sek9eRTNJ0BdG",
 		Plan:      config.StripePlan,
@@ -274,6 +280,27 @@ func deleteUserOrgssHandler(w http.ResponseWriter, r *http.Request) {
 	renderJson(w, r, struct{}{})
 }
 
+func showUserHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars   = mux.Vars(r)
+		userId = vars["userId"]
+		user   User
+		err    error
+	)
+
+	if user.Id, err = strconv.Atoi(userId); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	if err = config.DB.Select(&user).Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers"); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	renderJson(w, r, org)
+}
+
 func main() {
 	config.DB = pg.Connect(&pg.Options{
 		User: "postgres",
@@ -290,19 +317,18 @@ func main() {
 	r.HandleFunc("/auth/facebook", loginHandler)
 	r.HandleFunc("/auth/facebook/callback", loginCallbackHandler)
 
-	// r.HandleFunc("/v1/orgs", ArticlesHandler).Methods("GET")
 	r.HandleFunc("/v1/orgs/{orgId}", showOrgsHandler).Methods("GET")
-	r.HandleFunc("/v1/orgs/search", searchOrgsHandler).Methods("GET")
+	r.HandleFunc("/v1/orgs", searchOrgsHandler).Methods("GET")
 
 	r.HandleFunc("/v1/payments", createPaymentsHandler).Methods("POST")
 	r.HandleFunc("/v1/payments", updatePaymentsHandler).Methods("UPDATE")
 	r.HandleFunc("/v1/payments", deletePaymentsHandler).Methods("DELETE")
-	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
+	//	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
-	// r.HandleFunc("/v1/user", ArticlesHandler)
-	// r.HandleFunc("/v1/user/orgs/{orgId}", ArticlesHandler).Methods("PUT")
-	// r.HandleFunc("/v1/user/orgs/{orgId}", ArticlesHandler).Methods("DELETE")
-	// r.HandleFunc("/v1/user/ledgers", ArticlesHandler).Methods("GET")
+	r.HandleFunc("/v1/user/orgs/{orgId}", putUserOrgs).Methods("PUT")
+	r.HandleFunc("/v1/user/orgs/{orgId}", deleteUserOrgs).Methods("DELETE")
+
+	r.HandleFunc("/v1/user", showUserHandler)
 
 	http.Handle("/", r)
 }
