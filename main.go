@@ -133,15 +133,15 @@ func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	/*
-		// This code borrowed from goweb example and not fixed.
-		// get the state
-		state, err := gomniauth.StateFromParam(ctx.QueryValue("state"))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		// redirect to the 'after' URL
-		afterUrl := state.GetStringOrDefault("after", "error?e=No after parameter was set in the state")
+		    // This code borrowed from goweb example and not fixed.
+		    // get the state
+		    state, err := gomniauth.StateFromParam(ctx.QueryValue("state"))
+		    if err != nil {
+			    http.Error(w, err.Error(), http.StatusInternalServerError)
+			    return
+		    }
+		    // redirect to the 'after' URL
+		    afterUrl := state.GetStringOrDefault("after", "error?e=No after parameter was set in the state")
 	*/
 
 	// load the user
