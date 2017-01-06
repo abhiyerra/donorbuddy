@@ -4,6 +4,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/stretchr/gomniauth"
+	"github.com/stretchr/gomniauth/providers/facebook"
+	"github.com/stretchr/objx"
+
 	"github.com/gorilla/mux"
 	"gopkg.in/pg.v5"
 )
@@ -29,7 +33,7 @@ type Org struct {
 
 	Verified bool
 
-	StripeCustomerID string
+	StripeCustomerID string `json:"-"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -45,8 +49,8 @@ type User struct {
 
 	FacebookID string
 
-	StripeCustomerID     string
-	StripeSubscriptionID string
+	StripeCustomerID     string `json:"-"`
+	StripeSubscriptionID string `json:"-"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -59,8 +63,8 @@ type User struct {
 // user can have more than one of the same user and org map. That is
 // how we make donating more to a certain cause easier.
 type UserOrg struct {
-	UserID int64 `sql:",pk"`
-	OrgID  int64 `sql:",pk"`
+	UserId int64 `sql:",pk"`
+	OrgId  int64 `sql:",pk"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -70,19 +74,109 @@ type UserOrg struct {
 // happened in the system. So we have a complete list of transactions
 // as they have happened.
 type Ledger struct {
-	UserID int64 `sql:",pk"`
-	OrgID  int64 `sql:",pk"`
+	UserId int64 `sql:",pk"`
+	OrgId  int64 `sql:",pk"`
 	Amount float64
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
-	r.HandleFunc("/products", ProductsHandler)
-	r.HandleFunc("/articles", ArticlesHandler)
-	http.Handle("/", r)
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	provider, err := gomniauth.Provider("facebook")
+	if err != nil {
+		panic(err)
+	}
 
+	state := gomniauth.NewState("after", "success")
+
+	// This code borrowed from goweb example and not fixed.
+	// if you want to request additional scopes from the provider,
+	// pass them as login?scope=scope1,scope2
+	//options := objx.MSI("scope", ctx.QueryValue("scope"))
+
+	authUrl, err := provider.GetBeginAuthURL(state, nil)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// redirect
+	http.Redirect(w, r, authUrl, http.StatusFound)
+
+}
+
+func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	provider, err := gomniauth.Provider("facebook")
+	if err != nil {
+		panic(err)
+	}
+
+	omap, err := objx.FromURLQuery(r.URL.RawQuery)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	creds, err := provider.CompleteAuth(omap)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/*
+		// This code borrowed from goweb example and not fixed.
+		// get the state
+		state, err := gomniauth.StateFromParam(ctx.QueryValue("state"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// redirect to the 'after' URL
+		afterUrl := state.GetStringOrDefault("after", "error?e=No after parameter was set in the state")
+	*/
+
+	// load the user
+	user, userErr := provider.GetUser(creds)
+
+	if userErr != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := fmt.Sprintf("%#v", user)
+	io.WriteString(w, data)
+
+	// redirect
+	//return goweb.Respond.WithRedirect(ctx, afterUrl)
+
+}
+
+func main() {
+	gomniauth.SetSecurityKey("yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP") // NOTE: DO NOT COPY THIS - MAKE YOR OWN!
+	gomniauth.WithProviders(
+		facebook.New("537611606322077", "f9f4d77b3d3f4f5775369f5c9f88f65e", "http://localhost:8080/auth/facebook/callback"),
+	)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/auth/facebook", loginHandler)
+	r.HandleFunc("/auth/facebook/callback", loginCallbackHandler)
+
+	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("POST")
+	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("UPDATE")
+	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("DELETE")
+	// r.HandleFunc("/v1/payments/stripe-callback", ArticlesHandler)
+
+	// r.HandleFunc("/v1/orgs", ArticlesHandler).Methods("GET")
+	// r.HandleFunc("/v1/orgs/{orgId}", ArticlesHandler).Methods("GET")
+	// r.HandleFunc("/v1/orgs/search", ArticlesHandler).Methods("GET")
+
+	// r.HandleFunc("/v1/user", ArticlesHandler)
+	// r.HandleFunc("/v1/user/orgs", ArticlesHandler).Methods("GET")
+	// r.HandleFunc("/v1/user/orgs", ArticlesHandler).Methods("DELETE")
+	// r.HandleFunc("/v1/user/ledgers", ArticlesHandler).Methods("GET")
+
+	http.Handle("/", r)
 }
