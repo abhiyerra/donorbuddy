@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/stretchr/gomniauth"
@@ -12,8 +13,13 @@ import (
 	"gopkg.in/pg.v5"
 )
 
-type config struct {
+var config struct {
 	StripeSecretKey string
+	// StripePlan should be a Plan in Stripe with the price of
+	// 0.01 and billed monthly.
+	StripePlan string
+
+	DB *sql.DB
 }
 
 // Org is a table of the organizations that we will be supporting for
@@ -154,8 +160,25 @@ func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func showOrgssHandler(w http.ResponseWriter, r *http.Request) {
+func showOrgsHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars  = mux.Vars(r)
+		orgId = vars["orgId"]
+		org   Org
+		err   error
+	)
 
+	if org.Id, err = strconv.Atoi(orgId); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	if err = config.DB.Select(&org); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	renderJson(w, r, org)
 }
 
 func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
@@ -163,7 +186,7 @@ func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		orgs []Org
 	)
 
-	err := db.Model(&orgs).Where().Limit(50).Select()
+	err := config.DB.Model(&orgs).Where().Limit(50).Select()
 	if err != nil {
 		renderJson(w, r, err)
 	}
@@ -171,19 +194,53 @@ func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	renderJson(w, r, orgs)
 }
 
-func showPaymentsHandler(w http.ResponseWriter, r *http.Request) {
+func createPaymentsHandler(w http.ResponseWriter, r *http.Request) {
+	type plan struct {
+		// Amount is the amount User wants to donate in cents
+		Amount      int64
+		StripeToken string
+	}
+
+	s, err := sub.New(&stripe.SubParams{
+		Customer:  "cus_9sek9eRTNJ0BdG",
+		Plan:      config.StripePlan,
+		Quanitity: Amount,
+	})
 
 }
 
 func updatePaymentsHandler(w http.ResponseWriter, r *http.Request) {
+	type plan struct {
+		// NewAmount is the amount User wants to donate in cents
+		NewAmount int64
+	}
 
+	s, err := sub.Update(
+		"sub_9sed4J2K4jurwS",
+		&stripe.SubParams{
+			Plan:     config.StripePlan,
+			Quantity: NewAmount,
+		},
+	)
 }
 
 func deletePaymentsHandler(w http.ResponseWriter, r *http.Request) {
+	err := sub.Cancel(
+		"sub_9sed4J2K4jurwS",
+	)
+}
+
+func callbackPaymentsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
 func main() {
+	config.DB = pg.Connect(&pg.Options{
+		User: "postgres",
+	})
+
+	stripe.Key = config.StripeSecretKey
+
 	gomniauth.SetSecurityKey("yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP") // NOTE: DO NOT COPY THIS - MAKE YOR OWN!
 	gomniauth.WithProviders(
 		facebook.New("537611606322077", "f9f4d77b3d3f4f5775369f5c9f88f65e", "http://localhost:8080/auth/facebook/callback"),
@@ -194,13 +251,13 @@ func main() {
 	r.HandleFunc("/auth/facebook/callback", loginCallbackHandler)
 
 	// r.HandleFunc("/v1/orgs", ArticlesHandler).Methods("GET")
-	// r.HandleFunc("/v1/orgs/{orgId}", ArticlesHandler).Methods("GET")
-	// r.HandleFunc("/v1/orgs/search", ArticlesHandler).Methods("GET")
+	r.HandleFunc("/v1/orgs/{orgId}", showOrgsHandler).Methods("GET")
+	r.HandleFunc("/v1/orgs/search", searchOrgsHandler).Methods("GET")
 
-	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("POST")
-	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("UPDATE")
-	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("DELETE")
-	// r.HandleFunc("/v1/payments/stripe-callback", ArticlesHandler)
+	r.HandleFunc("/v1/payments", createPaymentsHandler).Methods("POST")
+	r.HandleFunc("/v1/payments", updatePaymentsHandler).Methods("UPDATE")
+	r.HandleFunc("/v1/payments", deletePaymentsHandler).Methods("DELETE")
+	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
 	// r.HandleFunc("/v1/user", ArticlesHandler)
 	// r.HandleFunc("/v1/user/orgs", ArticlesHandler).Methods("GET")
