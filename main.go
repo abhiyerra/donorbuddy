@@ -9,6 +9,10 @@ import (
 	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/objx"
 
+	"github.com/stripe/stripe-go"
+	"github.com/stripe/stripe-go/customer"
+	"github.com/stripe/stripe-go/sub"
+
 	"github.com/gorilla/mux"
 	"gopkg.in/pg.v5"
 )
@@ -19,7 +23,7 @@ var config struct {
 	// 0.01 and billed monthly.
 	StripePlan string
 
-	DB *sql.DB
+	DB *pg.DB
 }
 
 // Org is a table of the organizations that we will be supporting for
@@ -168,17 +172,17 @@ func showOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		err   error
 	)
 
-	if org.Id, err = strconv.Atoi(orgId); err != nil {
-		renderJson(w, r, err)
+	if org.Id, err = strconv.ParseInt(orgId, 10, 64); err != nil {
+		respondJson(w, r, err)
 		return
 	}
 
 	if err = config.DB.Select(&org); err != nil {
-		renderJson(w, r, err)
+		respondJson(w, r, err)
 		return
 	}
 
-	renderJson(w, r, org)
+	respondJson(w, r, org)
 }
 
 func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
@@ -188,16 +192,16 @@ func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := config.DB.Model(&orgs).Where().Limit(50).Select()
 	if err != nil {
-		renderJson(w, r, err)
+		respondJson(w, r, err)
 	}
 
-	renderJson(w, r, orgs)
+	respondJson(w, r, orgs)
 }
 
 func createPaymentsHandler(w http.ResponseWriter, r *http.Request) {
-	type plan struct {
+	var plan struct {
 		// Amount is the amount User wants to donate in cents
-		Amount      int64
+		Amount      uint64
 		StripeToken string
 	}
 
@@ -208,24 +212,26 @@ func createPaymentsHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := customer.New(customerParams)
 
 	s, err := sub.New(&stripe.SubParams{
-		Customer:  "cus_9sek9eRTNJ0BdG",
-		Plan:      config.StripePlan,
-		Quanitity: Amount,
+		Customer: "cus_9sek9eRTNJ0BdG",
+		Plan:     config.StripePlan,
+		Quantity: plan.Amount,
 	})
 
 }
 
 func updatePaymentsHandler(w http.ResponseWriter, r *http.Request) {
-	type plan struct {
+	var plan struct {
 		// NewAmount is the amount User wants to donate in cents
-		NewAmount int64
+		NewAmount uint64
 	}
+
+	// TODO: Check amount > 0
 
 	s, err := sub.Update(
 		"sub_9sed4J2K4jurwS",
 		&stripe.SubParams{
 			Plan:     config.StripePlan,
-			Quantity: NewAmount,
+			Quantity: plan.NewAmount,
 		},
 	)
 }
@@ -244,20 +250,20 @@ func putUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		err     error
 	)
 
-	if userOrg.OrgId, err = strconv.Atoi(orgId); err != nil {
-		renderJson(w, r, err)
+	if userOrg.OrgId, err = strconv.ParseInt(orgId, 10, 64); err != nil {
+		respondJson(w, r, err)
 		return
 	}
 
-	if err = db.Insert(&userOrg); err != nil {
-		renderJson(w, r, err)
+	if err = config.DB.Insert(&userOrg); err != nil {
+		respondJson(w, r, err)
 		return
 	}
 
-	renderJson(w, r, userOrg)
+	respondJson(w, r, userOrg)
 }
 
-func deleteUserOrgssHandler(w http.ResponseWriter, r *http.Request) {
+func deleteUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		vars    = mux.Vars(r)
 		orgId   = vars["orgId"]
@@ -265,19 +271,19 @@ func deleteUserOrgssHandler(w http.ResponseWriter, r *http.Request) {
 		err     error
 	)
 
-	if userOrg.OrgId, err = strconv.Atoi(orgId); err != nil {
-		renderJson(w, r, err)
+	if userOrg.OrgId, err = strconv.ParseInt(orgId, 10, 64); err != nil {
+		respondJson(w, r, err)
 		return
 	}
 
-	_, err := db.Model(&userOrg).Where("user_id = ?user_id and org_id = ?org_id").Limit(1).Delete()
+	_, err = config.DB.Model(&userOrg).Where("user_id = ?user_id and org_id = ?org_id").Limit(1).Delete()
 	if err != nil {
-		renderJson(w, r, err)
+		respondJson(w, r, err)
 		return
 
 	}
 
-	renderJson(w, r, struct{}{})
+	respondJson(w, r, struct{}{})
 }
 
 func showUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -288,17 +294,17 @@ func showUserHandler(w http.ResponseWriter, r *http.Request) {
 		err    error
 	)
 
-	if user.Id, err = strconv.Atoi(userId); err != nil {
-		renderJson(w, r, err)
+	if user.Id, err = strconv.ParseInt(userId, 10, 64); err != nil {
+		respondJson(w, r, err)
 		return
 	}
 
 	if err = config.DB.Select(&user).Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers"); err != nil {
-		renderJson(w, r, err)
+		respondJson(w, r, err)
 		return
 	}
 
-	renderJson(w, r, org)
+	respondJson(w, r, user)
 }
 
 func main() {
@@ -325,8 +331,8 @@ func main() {
 	r.HandleFunc("/v1/payments", deletePaymentsHandler).Methods("DELETE")
 	//	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
-	r.HandleFunc("/v1/user/orgs/{orgId}", putUserOrgs).Methods("PUT")
-	r.HandleFunc("/v1/user/orgs/{orgId}", deleteUserOrgs).Methods("DELETE")
+	r.HandleFunc("/v1/user/orgs/{orgId}", putUserOrgsHandler).Methods("PUT")
+	r.HandleFunc("/v1/user/orgs/{orgId}", deleteUserOrgsHandler).Methods("DELETE")
 
 	r.HandleFunc("/v1/user", showUserHandler)
 

@@ -1,20 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
 func respondJson(w http.ResponseWriter, r *http.Request, i interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-
-	switch i.(type) {
-	case error:
-		i = struct {
-			Error string
-		}{
-			i.(error).String(),
-		}
-	}
 
 	jsonResponse, err := json.MarshalIndent(i, "", "\t")
 	if err != nil {
@@ -35,8 +28,8 @@ func respondJson(w http.ResponseWriter, r *http.Request, i interface{}) {
 	}
 
 	switch v := i.(type) {
-	case ErrorResponse:
-		http.Error(w, callbackPrefix+string(jsonResponse)+callbackSuffix, v.Code)
+	case error:
+		http.Error(w, callbackPrefix+"{\"Error\":"+string(v)+"}"+callbackSuffix, 404)
 		return
 	}
 
