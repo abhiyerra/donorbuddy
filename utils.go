@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -29,7 +30,8 @@ func respondJson(w http.ResponseWriter, r *http.Request, i interface{}) {
 
 	switch v := i.(type) {
 	case error:
-		http.Error(w, callbackPrefix+"{\"Error\":"+string(v)+"}"+callbackSuffix, 404)
+		log.Println(v)
+		http.Error(w, callbackPrefix+"{\"Error\":\"An Error Happened\"}"+callbackSuffix, 404)
 		return
 	}
 
