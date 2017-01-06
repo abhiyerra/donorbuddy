@@ -230,8 +230,48 @@ func deletePaymentsHandler(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func callbackPaymentsHandler(w http.ResponseWriter, r *http.Request) {
+func putUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars    = mux.Vars(r)
+		orgId   = vars["orgId"]
+		userOrg UserOrg
+		err     error
+	)
 
+	if userOrg.OrgId, err = strconv.Atoi(orgId); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	if err = db.Insert(&userOrg); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	renderJson(w, r, userOrg)
+}
+
+func deleteUserOrgssHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars    = mux.Vars(r)
+		orgId   = vars["orgId"]
+		userOrg UserOrg
+		err     error
+	)
+
+	if userOrg.OrgId, err = strconv.Atoi(orgId); err != nil {
+		renderJson(w, r, err)
+		return
+	}
+
+	_, err := db.Model(&userOrg).Where("user_id = ?user_id and org_id = ?org_id").Limit(1).Delete()
+	if err != nil {
+		renderJson(w, r, err)
+		return
+
+	}
+
+	renderJson(w, r, struct{}{})
 }
 
 func main() {
@@ -260,8 +300,8 @@ func main() {
 	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
 	// r.HandleFunc("/v1/user", ArticlesHandler)
-	// r.HandleFunc("/v1/user/orgs", ArticlesHandler).Methods("GET")
-	// r.HandleFunc("/v1/user/orgs", ArticlesHandler).Methods("DELETE")
+	// r.HandleFunc("/v1/user/orgs/{orgId}", ArticlesHandler).Methods("PUT")
+	// r.HandleFunc("/v1/user/orgs/{orgId}", ArticlesHandler).Methods("DELETE")
 	// r.HandleFunc("/v1/user/ledgers", ArticlesHandler).Methods("GET")
 
 	http.Handle("/", r)
