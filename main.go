@@ -228,18 +228,22 @@ func updatePaymentsHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: Check amount > 0
 
 	s, err := sub.Update(
-		"sub_9sed4J2K4jurwS",
+		"sub_9sed4J2K4jurwS", // TODO: Get User's subscription
 		&stripe.SubParams{
 			Plan:     config.StripePlan,
 			Quantity: plan.NewAmount,
 		},
 	)
+
+	renderJson(w, r, struct{}{})
 }
 
 func deletePaymentsHandler(w http.ResponseWriter, r *http.Request) {
 	err := sub.Cancel(
-		"sub_9sed4J2K4jurwS",
+		"sub_9sed4J2K4jurwS", // TODO: Cancel user's subscription
 	)
+
+	renderJson(w, r, struct{}{})
 }
 
 func putUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
@@ -314,8 +318,10 @@ func main() {
 
 	stripe.Key = config.StripeSecretKey
 
+	// TODO Fix this
 	gomniauth.SetSecurityKey("yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP") // NOTE: DO NOT COPY THIS - MAKE YOR OWN!
 	gomniauth.WithProviders(
+		// TODO Move this to config and get actual keys.
 		facebook.New("537611606322077", "f9f4d77b3d3f4f5775369f5c9f88f65e", "http://localhost:8080/auth/facebook/callback"),
 	)
 
