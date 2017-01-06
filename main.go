@@ -154,6 +154,35 @@ func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func showOrgssHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		orgs []Org
+	)
+
+	err := db.Model(&orgs).Where().Limit(50).Select()
+	if err != nil {
+		renderJson(w, r, err)
+	}
+
+	renderJson(w, r, orgs)
+}
+
+func showPaymentsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func updatePaymentsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func deletePaymentsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
 	gomniauth.SetSecurityKey("yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP") // NOTE: DO NOT COPY THIS - MAKE YOR OWN!
 	gomniauth.WithProviders(
@@ -164,14 +193,14 @@ func main() {
 	r.HandleFunc("/auth/facebook", loginHandler)
 	r.HandleFunc("/auth/facebook/callback", loginCallbackHandler)
 
+	// r.HandleFunc("/v1/orgs", ArticlesHandler).Methods("GET")
+	// r.HandleFunc("/v1/orgs/{orgId}", ArticlesHandler).Methods("GET")
+	// r.HandleFunc("/v1/orgs/search", ArticlesHandler).Methods("GET")
+
 	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("POST")
 	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("UPDATE")
 	// r.HandleFunc("/v1/payments", ArticlesHandler).Methods("DELETE")
 	// r.HandleFunc("/v1/payments/stripe-callback", ArticlesHandler)
-
-	// r.HandleFunc("/v1/orgs", ArticlesHandler).Methods("GET")
-	// r.HandleFunc("/v1/orgs/{orgId}", ArticlesHandler).Methods("GET")
-	// r.HandleFunc("/v1/orgs/search", ArticlesHandler).Methods("GET")
 
 	// r.HandleFunc("/v1/user", ArticlesHandler)
 	// r.HandleFunc("/v1/user/orgs", ArticlesHandler).Methods("GET")
