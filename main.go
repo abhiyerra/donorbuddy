@@ -200,27 +200,6 @@ func deleteUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	respondJson(w, r, struct{}{})
 }
 
-func showUserHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		vars   = mux.Vars(r)
-		userID = vars["userId"]
-		user   User
-		err    error
-	)
-
-	if user.Id, err = strconv.ParseInt(userID, 10, 64); err != nil {
-		respondJson(w, r, err)
-		return
-	}
-
-	if err = config.DB.Model(&user).Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers").Select(); err != nil {
-		respondJson(w, r, err)
-		return
-	}
-
-	respondJson(w, r, user)
-}
-
 func main() {
 	config.DB = pg.Connect(&pg.Options{
 		User: "postgres",
