@@ -1,5 +1,7 @@
 {
-    "DBConn": "",
+    "Database": {
+        "User": "postgres"
+    },
     "Auth": {
         "SecurityKey": "yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP",
         "Facebook": {

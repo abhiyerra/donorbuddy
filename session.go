@@ -31,7 +31,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// redirect
 	http.Redirect(w, r, authUrl, http.StatusFound)
-
 }
 
 func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {

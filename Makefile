@@ -6,3 +6,6 @@ deps:
 
 test:
 	go test -v
+
+dev-run: build
+	./donorbuddy config.dev.json

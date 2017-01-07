@@ -50,12 +50,20 @@ func readConfig() {
 }
 
 func setConfig() {
+	if config.Database == nil {
+		log.Fatal("failed to load database configuration")
+	}
+
 	config.DB = pg.Connect(config.Database)
 
 	stripe.Key = config.StripeSecretKey
 
 	gomniauth.SetSecurityKey(config.Auth.SecurityKey)
 	gomniauth.WithProviders(facebook.New(config.Auth.Facebook.AppID, config.Auth.Facebook.AppSecret, config.Auth.Facebook.Callback))
+}
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
 func main() {
@@ -80,4 +88,5 @@ func main() {
 	r.HandleFunc("/v1/user", showUserHandler)
 
 	http.Handle("/", r)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
