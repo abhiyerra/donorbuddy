@@ -1,5 +1,13 @@
 package main
 
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
+)
+
 // Org is a table of the organizations that we will be supporting for
 // donations..
 type Org struct {
@@ -52,7 +60,7 @@ func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		orgs []Org
 	)
 
-	err := config.DB.Model(&orgs).Where().Limit(50).Select()
+	err := config.DB.Model(&orgs).Where("").Limit(50).Select()
 	if err != nil {
 		respondJson(w, r, err)
 	}

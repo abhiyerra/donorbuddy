@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stretchr/gomniauth"
-	"github.com/stretchr/objx"
+	"github.com/gorilla/mux"
 )
 
 // User contains the information about the user who will be doing the

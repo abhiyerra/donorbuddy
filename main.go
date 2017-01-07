@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
-	"strconv"
-	"time"
+	"os"
 
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/facebook"
@@ -15,27 +17,50 @@ import (
 )
 
 var config struct {
+	Database *pg.Options
+
+	Auth struct {
+		SecurityKey string
+
+		Facebook struct {
+			AppID     string
+			AppSecret string
+			Callback  string
+		}
+	}
+
 	StripeSecretKey string
 	// StripePlan should be a Plan in Stripe with the price of
 	// 0.01 and billed monthly.
 	StripePlan string
 
-	DB *pg.DB
+	DB *pg.DB `json:"-"`
 }
 
-func main() {
-	config.DB = pg.Connect(&pg.Options{
-		User: "postgres",
-	})
+func readConfig() {
+	configFile, err := ioutil.ReadFile(os.Args[1])
+	if err != nil {
+		log.Fatal("failed to open config file", os.Args[1])
+	}
+
+	err = json.Unmarshal(configFile, &config)
+	if err != nil {
+		log.Fatal("failed to open config file", os.Args[1])
+	}
+}
+
+func setConfig() {
+	config.DB = pg.Connect(config.Database)
 
 	stripe.Key = config.StripeSecretKey
 
-	// TODO Fix this
-	gomniauth.SetSecurityKey("yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP") // NOTE: DO NOT COPY THIS - MAKE YOR OWN!
-	gomniauth.WithProviders(
-		// TODO Move this to config and get actual keys.
-		facebook.New("537611606322077", "f9f4d77b3d3f4f5775369f5c9f88f65e", "http://localhost:8080/auth/facebook/callback"),
-	)
+	gomniauth.SetSecurityKey(config.Auth.SecurityKey)
+	gomniauth.WithProviders(facebook.New(config.Auth.Facebook.AppID, config.Auth.Facebook.AppSecret, config.Auth.Facebook.Callback))
+}
+
+func main() {
+	readConfig()
+	setConfig()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/auth/facebook", loginHandler)
