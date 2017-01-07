@@ -1,5 +1,12 @@
 package main
 
+import (
+	"net/http"
+
+	"github.com/stripe/stripe-go/customer"
+	"github.com/stripe/stripe-go/sub"
+)
+
 func createPaymentsHandler(w http.ResponseWriter, r *http.Request) {
 	var plan struct {
 		// Amount is the amount User wants to donate in cents

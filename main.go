@@ -9,8 +9,6 @@ import (
 	"github.com/stretchr/gomniauth/providers/facebook"
 
 	"github.com/stripe/stripe-go"
-	"github.com/stripe/stripe-go/customer"
-	"github.com/stripe/stripe-go/sub"
 
 	"github.com/gorilla/mux"
 	"gopkg.in/pg.v5"
