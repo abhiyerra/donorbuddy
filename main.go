@@ -12,7 +12,9 @@ import (
 
 	"github.com/stripe/stripe-go"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
 	"gopkg.in/pg.v5"
 )
 
@@ -47,6 +49,8 @@ func readConfig() {
 	if err != nil {
 		log.Fatal("failed to open config file", os.Args[1])
 	}
+
+	log.Println(config)
 }
 
 func setConfig() {
@@ -87,6 +91,7 @@ func main() {
 
 	r.HandleFunc("/v1/user", showUserHandler)
 
-	http.Handle("/", r)
+	http.Handle("/", handlers.LoggingHandler(os.Stdout, r))
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

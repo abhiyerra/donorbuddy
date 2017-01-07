@@ -5,9 +5,9 @@
     "Auth": {
         "SecurityKey": "yLiCQYG7CAflDavqGH461IO0MHp7TEbpg6TwHBWdJzNwYod1i5ZTbrIF5bEoO3oP",
         "Facebook": {
-            "AppID": "392998377729992",
-            "AppSecret": "1861120b24e0c474bd2b0fc557ee15dd",
-            "Callback": "http://localhost:8080/auth/facebook/callback"
+            "AppID": "393012827728547",
+            "AppSecret": "67468e4398532605cbe4489d530c578b",
+            "Callback": "http://nanoyak:8080/auth/facebook/callback"
         }
     },
     "StripeSecretKey": "",

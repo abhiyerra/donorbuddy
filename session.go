@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/stretchr/gomniauth"
@@ -12,25 +13,17 @@ import (
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	provider, err := gomniauth.Provider("facebook")
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
-	state := gomniauth.NewState("after", "success")
-
-	// This code borrowed from goweb example and not fixed.
-	// if you want to request additional scopes from the provider,
-	// pass them as login?scope=scope1,scope2
-	//options := objx.MSI("scope", ctx.QueryValue("scope"))
-
-	authUrl, err := provider.GetBeginAuthURL(state, nil)
-
+	authURL, err := provider.GetBeginAuthURL(gomniauth.NewState("after", "success"), nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// redirect
-	http.Redirect(w, r, authUrl, http.StatusFound)
+	http.Redirect(w, r, authURL, http.StatusFound)
 }
 
 func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
