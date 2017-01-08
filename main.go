@@ -16,6 +16,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 
+	"github.com/rs/cors"
+
 	"gopkg.in/pg.v5"
 )
 
