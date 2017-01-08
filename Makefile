@@ -9,6 +9,7 @@ test:
 	#go test -v
 
 dev-run: build
+	docker-compose build
 	docker-compose up
 
 dev-clean:

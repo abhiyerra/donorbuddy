@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -43,11 +44,13 @@ func showOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if org.Id, err = strconv.ParseInt(orgId, 10, 64); err != nil {
+		log.Println(err)
 		respondJson(w, r, err)
 		return
 	}
 
 	if err = config.DB.Select(&org); err != nil {
+		log.Println(err)
 		respondJson(w, r, err)
 		return
 	}
@@ -57,10 +60,27 @@ func showOrgsHandler(w http.ResponseWriter, r *http.Request) {
 
 func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	var (
-		orgs []Org
+		orgs   []Org
+		search = config.DB.Model(&orgs)
+
+		city     = r.FormValue("city")
+		state    = r.FormValue("state")
+		category = r.FormValue("category")
 	)
 
-	err := config.DB.Model(&orgs).Limit(50).Select()
+	if city != "" {
+		search = search.Where("city = ?", city)
+	}
+
+	if state != "" {
+		search = search.Where("state = ?", state)
+	}
+
+	if category != "" {
+		search = search.Where("category = ?", category)
+	}
+
+	err := search.Order("name asc").Limit(50).Select()
 	if err != nil {
 		respondJson(w, r, err)
 	}
