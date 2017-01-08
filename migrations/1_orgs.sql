@@ -9,6 +9,7 @@ CREATE TABLE orgs (
     category varchar(50),
     verified bool default false,
     stripe_customer_id varchar(255),
+    notes varchar(255),
     created_at timestamp default now(),
     updated_at timestamp default now()
 );

@@ -60,7 +60,7 @@ func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		orgs []Org
 	)
 
-	err := config.DB.Model(&orgs).Where("").Limit(50).Select()
+	err := config.DB.Model(&orgs).Limit(50).Select()
 	if err != nil {
 		respondJson(w, r, err)
 	}

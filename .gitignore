@@ -24,3 +24,5 @@ _testmain.go
 *.prof
 /donerbuddy
 /donorbuddy
+/data-download-pub78.txt
+/data-download-pub78.zip
