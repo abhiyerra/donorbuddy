@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/stretchr/gomniauth"
-	"github.com/stretchr/gomniauth/providers/facebook"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
 
 	"github.com/stripe/stripe-go"
 
@@ -36,7 +36,8 @@ var config struct {
 	// 0.01 and billed monthly.
 	StripePlan string
 
-	DB *pg.DB `json:"-"`
+	DB        *pg.DB         `json:"-"`
+	OAuthConf *oauth2.Config `json:"-"`
 }
 
 func readConfig() {
@@ -62,8 +63,13 @@ func setConfig() {
 
 	stripe.Key = config.StripeSecretKey
 
-	gomniauth.SetSecurityKey(config.Auth.SecurityKey)
-	gomniauth.WithProviders(facebook.New(config.Auth.Facebook.AppID, config.Auth.Facebook.AppSecret, config.Auth.Facebook.Callback))
+	config.OAuthConf = &oauth2.Config{
+		ClientID:     config.Auth.Facebook.AppID,
+		ClientSecret: config.Auth.Facebook.AppSecret,
+		RedirectURL:  config.Auth.Facebook.Callback,
+		Scopes:       []string{"public_profile"},
+		Endpoint:     facebook.Endpoint,
+	}
 }
 
 func init() {
@@ -75,7 +81,7 @@ func main() {
 	setConfig()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/auth/facebook", loginHandler)
+	r.HandleFunc("/auth/login", loginHandler)
 	r.HandleFunc("/auth/facebook/callback", loginCallbackHandler)
 
 	r.HandleFunc("/v1/orgs/{orgId}", showOrgsHandler).Methods("GET")

@@ -1,74 +1,65 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
-	"github.com/stretchr/gomniauth"
-	"github.com/stretchr/objx"
+	"golang.org/x/oauth2"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	provider, err := gomniauth.Provider("facebook")
+	u, err := url.Parse(config.OAuthConf.Endpoint.AuthURL)
 	if err != nil {
-		log.Println(err)
+		log.Fatal("Parse: ", err)
 	}
 
-	authURL, err := provider.GetBeginAuthURL(gomniauth.NewState("after", "success"), nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	params := url.Values{}
+	params.Add("client_id", config.OAuthConf.ClientID)
+	params.Add("scope", strings.Join(config.OAuthConf.Scopes, " "))
+	params.Add("redirect_uri", config.OAuthConf.RedirectURL)
+	params.Add("response_type", "code")
+	params.Add("state", config.Auth.SecurityKey)
 
-	// redirect
-	http.Redirect(w, r, authURL, http.StatusFound)
+	u.RawQuery = params.Encode()
+	http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
 }
 
 func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	provider, err := gomniauth.Provider("facebook")
-	if err != nil {
-		panic(err)
-	}
-
-	omap, err := objx.FromURLQuery(r.URL.RawQuery)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	state := r.FormValue("state")
+	if state != config.Auth.SecurityKey {
+		log.Printf("invalid oauth state, expected '%s', got '%s'\n", config.Auth.SecurityKey, state)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	creds, err := provider.CompleteAuth(omap)
+	code := r.FormValue("code")
 
+	token, err := config.OAuthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("config.OAuthConf.Exchange() failed with '%s'\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	/*
-		    // This code borrowed from goweb example and not fixed.
-		    // get the state
-		    state, err := gomniauth.StateFromParam(ctx.QueryValue("state"))
-		    if err != nil {
-			    http.Error(w, err.Error(), http.StatusInternalServerError)
-			    return
-		    }
-		    // redirect to the 'after' URL
-		    afterUrl := state.GetStringOrDefault("after", "error?e=No after parameter was set in the state")
-	*/
+	resp, err := http.Get("https://graph.facebook.com/me?access_token=" + url.QueryEscape(token.AccessToken))
+	if err != nil {
+		log.Printf("Get: %s\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+	defer resp.Body.Close()
 
-	// load the user
-	user, userErr := provider.GetUser(creds)
-
-	if userErr != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	response, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("ReadAll: %s\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	data := fmt.Sprintf("%#v", user)
-	io.WriteString(w, data)
+	log.Printf("parseResponseBody: %s\n", string(response))
 
-	// redirect
-	//return goweb.Respond.WithRedirect(ctx, afterUrl)
-
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
