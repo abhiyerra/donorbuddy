@@ -23,7 +23,7 @@ func putUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		vars    = mux.Vars(r)
 		orgId   = vars["orgId"]
-		userOrg UserOrg
+		userOrg = UserOrg{UserId: UserValue(r).Id}
 		err     error
 	)
 
@@ -40,11 +40,12 @@ func putUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	respondJson(w, r, userOrg)
 }
 
+// TODO: Currently it deletes all rows. Need to just delete one.
 func deleteUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 	var (
 		vars    = mux.Vars(r)
 		orgId   = vars["orgId"]
-		userOrg UserOrg
+		userOrg = UserOrg{UserId: UserValue(r).Id}
 		err     error
 	)
 
@@ -53,7 +54,7 @@ func deleteUserOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = config.DB.Model(&userOrg).Where("user_id = ?user_id and org_id = ?org_id").Limit(1).Delete()
+	_, err = config.DB.Model(&userOrg).Delete()
 	if err != nil {
 		respondJson(w, r, err)
 		return

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"time"
 )
@@ -18,18 +19,22 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Orgs    []Org    `pg:",many2many:user_orgs"`
-	Ledgers []Ledger `pg:",many2many:ledgers"`
+	Orgs    []*Org    `pg:",many2many:user_orgs"`
+	Ledgers []*Ledger `pg:",many2many:ledgers"`
 }
 
 func showUserHandler(w http.ResponseWriter, r *http.Request) {
-	//err = config.DB.Model(&user).Select()
-	//.Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers")
-	// if err != nil {
-	// 	log.Println(err)
-	// 	respondJson(w, r, err)
-	// 	return
-	// }
+	var (
+		user = UserValue(r)
+	)
 
-	respondJson(w, r, UserValue(r))
+	err := config.DB.Model(&user).Column("user.*", "Orgs").Select()
+	//.Column("ledgers.*", "Ledgers")
+	if err != nil {
+		log.Println(err)
+		respondJson(w, r, err)
+		return
+	}
+
+	respondJson(w, r, user)
 }

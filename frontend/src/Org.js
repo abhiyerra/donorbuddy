@@ -1,12 +1,32 @@
 import React, { Component } from 'react';
+import $ from 'jquery';
 
 class Org extends Component {
+  constructor() {
+    super();
+
+    this.handleAdd = this.handleAdd.bind(this);
+  }
+
+  handleAdd(e) {
+    e.preventDefault();
+
+    console.log("hi");
+    $.ajax({
+      url: `/v1/user/org/${this.props.org.Id}`,
+      type: 'PUT',
+      success: data => {
+        console.log(data);
+      }
+    });
+  }
+
   render() {
     return (
-      <tr className="col-lg-3">
-            <td>{this.props.org.Name}</td>
-            <td>{this.props.org.Category}</td>
-            <td><a href={`/v1/user/org/${this.props.org.Id}`}>Add</a></td>
+      <tr>
+        <td>{this.props.org.Name}</td>
+        <td>{this.props.org.Category}</td>
+        <td><a href="#" onClick={this.handleAdd}>Add</a></td>
       </tr>
     );
   }

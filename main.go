@@ -78,6 +78,8 @@ func setConfig() {
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	pg.SetQueryLogger(log.New(os.Stdout, "", log.LstdFlags))
+
 }
 
 func main() {
@@ -96,8 +98,8 @@ func main() {
 	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(deletePaymentsHandler))).Methods("DELETE")
 	//	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
-	r.Handle("/v1/user/orgs/{orgId}", AuthMiddleware(http.HandlerFunc(putUserOrgsHandler))).Methods("PUT")
-	r.Handle("/v1/user/orgs/{orgId}", AuthMiddleware(http.HandlerFunc(deleteUserOrgsHandler))).Methods("DELETE")
+	r.Handle("/v1/user/org/{orgId}", AuthMiddleware(http.HandlerFunc(putUserOrgsHandler))).Methods("PUT")
+	r.Handle("/v1/user/org/{orgId}", AuthMiddleware(http.HandlerFunc(deleteUserOrgsHandler))).Methods("DELETE")
 
 	r.Handle("/v1/user", AuthMiddleware(http.HandlerFunc(showUserHandler))).Methods("GET")
 

@@ -26,7 +26,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	params.Add("state", config.Auth.SecurityKey)
 
 	u.RawQuery = params.Encode()
+
+	log.Println(u.String())
 	http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
+	//respondJson(w, r, struct{ RedirectURL string }{u.String()})
 }
 
 func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,6 +92,7 @@ func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	session.Values["ID"] = u.Id
 	session.Save(r, w)
 
+	w.Header().Set("Accept", "text/plain")
 	http.Redirect(w, r, r.Referer(), http.StatusTemporaryRedirect)
 }
 
