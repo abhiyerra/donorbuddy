@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -61,5 +63,72 @@ func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("parseResponseBody: %s\n", string(response))
 
+	var fbUser struct {
+		Name string `json:"name"`
+		ID   string `json:"id"`
+	}
+
+	err = json.Unmarshal(response, &fbUser)
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	u := &User{FacebookID: fbUser.ID}
+	_, err = config.DB.Model(u).Where("facebook_id = ?", fbUser.ID).OnConflict("DO NOTHING").SelectOrInsert()
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	log.Println(*u)
+
+	session, _ := config.Store.Get(r, "user")
+	session.Values["ID"] = u.Id
+	session.Save(r, w)
+
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+func getSessionID(r *http.Request) int64 {
+	session, _ := config.Store.Get(r, "user")
+	val := session.Values["ID"]
+	userID, ok := val.(int64)
+	if !ok {
+		return 0
+	}
+	return userID
+}
+
+const (
+	UserKey = "User"
+)
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var (
+			userID = getSessionID(r)
+			user   = User{Id: userID}
+		)
+
+		if userID == 0 {
+			respondJson(w, r, struct{ Error string }{"Need to login"})
+			return
+		}
+
+		log.Println(user)
+
+		if err := config.DB.Select(&user); err != nil {
+			respondJson(w, r, err)
+			return
+		}
+
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), UserKey, user)))
+	})
+}
+
+func UserValue(r *http.Request) User {
+	return r.Context().Value(UserKey).(User)
 }

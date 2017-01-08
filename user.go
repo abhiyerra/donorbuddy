@@ -2,10 +2,7 @@ package main
 
 import (
 	"net/http"
-	"strconv"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 // User contains the information about the user who will be doing the
@@ -26,22 +23,13 @@ type User struct {
 }
 
 func showUserHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		vars   = mux.Vars(r)
-		userID = vars["userId"]
-		user   User
-		err    error
-	)
+	//err = config.DB.Model(&user).Select()
+	//.Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers")
+	// if err != nil {
+	// 	log.Println(err)
+	// 	respondJson(w, r, err)
+	// 	return
+	// }
 
-	if user.Id, err = strconv.ParseInt(userID, 10, 64); err != nil {
-		respondJson(w, r, err)
-		return
-	}
-
-	if err = config.DB.Model(&user).Column("orgs.*", "Orgs").Column("ledgers.*", "Ledgers").Select(); err != nil {
-		respondJson(w, r, err)
-		return
-	}
-
-	respondJson(w, r, user)
+	respondJson(w, r, UserValue(r))
 }

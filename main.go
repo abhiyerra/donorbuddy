@@ -14,6 +14,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 
 	"gopkg.in/pg.v5"
 )
@@ -36,8 +37,9 @@ var config struct {
 	// 0.01 and billed monthly.
 	StripePlan string
 
-	DB        *pg.DB         `json:"-"`
-	OAuthConf *oauth2.Config `json:"-"`
+	DB        *pg.DB                `json:"-"`
+	OAuthConf *oauth2.Config        `json:"-"`
+	Store     *sessions.CookieStore `json:"-"`
 }
 
 func readConfig() {
@@ -70,6 +72,8 @@ func setConfig() {
 		Scopes:       []string{"public_profile"},
 		Endpoint:     facebook.Endpoint,
 	}
+
+	config.Store = sessions.NewCookieStore([]byte(config.Auth.SecurityKey))
 }
 
 func init() {
@@ -87,15 +91,15 @@ func main() {
 	r.HandleFunc("/v1/orgs/{orgId}", showOrgsHandler).Methods("GET")
 	r.HandleFunc("/v1/orgs", searchOrgsHandler).Methods("GET")
 
-	r.HandleFunc("/v1/payments", createPaymentsHandler).Methods("POST")
-	r.HandleFunc("/v1/payments", updatePaymentsHandler).Methods("UPDATE")
-	r.HandleFunc("/v1/payments", deletePaymentsHandler).Methods("DELETE")
+	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(createPaymentsHandler))).Methods("POST")
+	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(updatePaymentsHandler))).Methods("UPDATE")
+	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(deletePaymentsHandler))).Methods("DELETE")
 	//	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
-	r.HandleFunc("/v1/user/orgs/{orgId}", putUserOrgsHandler).Methods("PUT")
-	r.HandleFunc("/v1/user/orgs/{orgId}", deleteUserOrgsHandler).Methods("DELETE")
+	r.Handle("/v1/user/orgs/{orgId}", AuthMiddleware(http.HandlerFunc(putUserOrgsHandler))).Methods("PUT")
+	r.Handle("/v1/user/orgs/{orgId}", AuthMiddleware(http.HandlerFunc(deleteUserOrgsHandler))).Methods("DELETE")
 
-	r.HandleFunc("/v1/user", showUserHandler)
+	r.Handle("/v1/user", AuthMiddleware(http.HandlerFunc(showUserHandler))).Methods("GET")
 
 	http.Handle("/", handlers.LoggingHandler(os.Stdout, r))
 
