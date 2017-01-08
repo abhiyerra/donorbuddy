@@ -89,7 +89,7 @@ func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	session.Values["ID"] = u.Id
 	session.Save(r, w)
 
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, r.Referer(), http.StatusTemporaryRedirect)
 }
 
 func getSessionID(r *http.Request) int64 {

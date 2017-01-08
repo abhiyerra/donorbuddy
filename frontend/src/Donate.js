@@ -12,7 +12,6 @@ class Donate extends Component {
     return (
       <div className="row">
       <div className="col-lg-12 text-center">
-      <a href="/auth/login" className="btn btn-lg btn-primary">Login with Facebook</a>
       </div>
       </div>
     );

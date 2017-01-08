@@ -27,9 +27,6 @@ class Orgs extends Component {
     return (
       <div className="row">
       <div className="col-lg-12">
-      <div>
-
-      </div>
       <table className="table">
       <tbody>
       {this.state.orgs}
