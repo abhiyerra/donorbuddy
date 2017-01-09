@@ -11,9 +11,8 @@ class Org extends Component {
   handleAdd(e) {
     e.preventDefault();
 
-    console.log("hi");
     $.ajax({
-      url: `/v1/user/org/${this.props.org.Id}`,
+      url: `${global.APIServer}/v1/user/org/${this.props.org.Id}`,
       type: 'PUT',
       success: data => {
         console.log(data);

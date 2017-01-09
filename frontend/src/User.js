@@ -1,35 +1,41 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
+import Donate from './Donate';
 
-class User extends Component {
-  constructor() {
-    super();
-
-    this.state = {
-      loginButton: null,
-      user: null
-    };
-
+class DonationList extends Component {
+  constructor(props) {
+    super(props);
 
     this.handleRemove = this.handleRemove.bind(this);
   }
 
+  getOrgs() {
+    let orgs = [];
 
-  componentDidMount() {
-    $.get("/v1/user", user => {
-      console.log(user);
-      if(user.Error !== undefined) {
-        this.setState({
-          loginButton: (
-            <a href={"/auth/login"} className="btn btn-lg btn-primary">Login with Facebook</a>
-          )
-        });
-      } else {
-        this.setState({
-          user: user
-        });
-      }
-    });
+    if(this.props.user == null) {
+      return orgs;
+    }
+
+
+    for(let i = 0; i < this.props.user.Orgs.length; i++) {
+      orgs.push(
+        <tr>
+          <td>{this.props.user.Orgs[i].Name}</td>
+          <td>{93 / this.props.user.Orgs.length}%</td>
+          <td><a href="#" onClick={this.handleRemove(`${global.APIServer}/v1/user/org/${this.props.user.Orgs[i].Id}`)}>Remove</a></td>
+        </tr>
+      );
+    }
+
+    orgs.push(
+      <tr>
+        <td>DonorBuddy Fee</td>
+        <td>7%</td>
+        <td></td>
+      </tr>
+    );
+
+      return orgs;
   }
 
   handleRemove(link) {
@@ -46,46 +52,74 @@ class User extends Component {
     }
   }
 
-  orgInfo() {
-    if(this.state.user == null) {
-      return null
-    }
-
-    if(this.state.user.Orgs == null) {
+  render() {
+    if(this.props.user == null) {
       return null;
     }
 
-    let orgs = [];
-    for(let i = 0; i < this.state.user.Orgs.length; i++) {
-      orgs.push(
-        <tr>
-          <td>{this.state.user.Orgs[i].Name}</td>
-          <td>{100 / this.state.user.Orgs.length}%</td>
-          <td><a href="#" onClick={this.handleRemove(`/v1/user/org/${this.state.user.Orgs[i].Id}`)}>Remove</a></td>
-        </tr>
+    if(this.props.user.Orgs == null) {
+      return (
+      <div className="row">
+        <div className="col-lg-12 text-center">
+          <h2>Your Donation List</h2>
+          <hr className="star-primary"/>
+        </div>
+
+        <div className="col-lg-12 text-center">
+          <p>Add some places you want to donate to down below.</p>
+        </div>
+      </div>
+
       );
     }
 
+    let orgs = this.getOrgs();
     return (
-      <div className="col-lg-12">
-        <h2>Current Donation Breakdown</h2>
-        <table className="table">
-          <tbody>
-            {orgs}
-          </tbody>
-        </table>
+      <div className="row">
+        <div className="col-lg-12 text-center">
+          <h2>Your Donation List</h2>
+          <hr className="star-primary"/>
+        </div>
+
+        <div className="col-lg-12">
+          <table className="table">
+            <tbody>
+              {orgs}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
+  }
+}
+
+
+class User extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      user: null
+    };
+  }
+
+  componentDidMount() {
+    $.get(global.APIServer+"/v1/user", (user) => {
+      if(user.Error !== undefined) {
+        user = null;
+      }
+
+      this.setState({
+        user: user
+      });
+    });
   }
 
   render() {
     return (
-      <div className="row">
-        <div className="col-lg-12 text-center">
-          {this.state.loginButton}
-        </div>
-
-        {this.orgInfo()}
+      <div>
+        <Donate user={this.state.user} />
+        <DonationList user={this.state.user} />
       </div>
     );
   }

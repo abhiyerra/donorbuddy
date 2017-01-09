@@ -27,9 +27,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	u.RawQuery = params.Encode()
 
-	log.Println(u.String())
 	http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
-	//respondJson(w, r, struct{ RedirectURL string }{u.String()})
 }
 
 func loginCallbackHandler(w http.ResponseWriter, r *http.Request) {

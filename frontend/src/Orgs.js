@@ -19,7 +19,7 @@ class Orgs extends Component {
   }
 
   getOrgs() {
-    $.get("/v1/orgs", {
+    $.get(global.APIServer+"/v1/orgs", {
       state: this.state.State,
       city: this.state.City,
       category: this.state.Category,
@@ -55,8 +55,12 @@ class Orgs extends Component {
   render() {
     return (
       <div className="row">
+        <div className="col-lg-12 text-center">
+          <h2>Find Orgs</h2>
+          <hr className="star-primary"/>
+        </div>
+
         <div className="col-lg-12">
-          <h2>Search</h2>
           <div className="form-group">
             <label for="usr">City:</label>
             <input type="text" className="form-control" value={this.state.City} onChange={this.handleChangeCity}/>

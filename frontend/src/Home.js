@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router';
 
+import User from './User';
+import Orgs from './Orgs';
+
 class Home extends Component {
   render() {
     return (
@@ -11,7 +14,7 @@ class Home extends Component {
               <button type="button" className="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                 <span className="sr-only">Toggle navigation</span> Menu <i className="fa fa-bars"></i>
               </button>
-              <a className="navbar-brand" href="#page-top">DonorDonkey</a>
+              <a className="navbar-brand" href="#page-top">DonorBuddy</a>
             </div>
 
             <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -20,10 +23,10 @@ class Home extends Component {
                   <a href="#page-top"></a>
                 </li>
                 <li className="page-scroll">
-                  <a href="#how-it-works">How it Works</a>
+                  <a href="/#how-it-works">How it Works</a>
                 </li>
                 <li className="page-scroll">
-                  <Link to={`/donate`}>Donate</Link>
+                  <a href="/#donate">Donate</a>
                 </li>
               </ul>
             </div>
@@ -34,9 +37,8 @@ class Home extends Component {
           <div className="container">
             <div className="row">
               <div className="col-lg-12">
-                {/*<img className="img-responsive" src="img/profile.png" alt=""/>*/}
+                <img className="img-responsive" src="/images/logo.png" alt=""/>
                 <div className="intro-text">
-                  <span className="name">DonorDonkey</span>
                   <hr className="star-light"/>
                   <span className="skills">Split Your Donations to Multiple Non-Profits</span>
                   <br/>
@@ -72,14 +74,27 @@ class Home extends Component {
           </div>
         </section>
 
+
+        <section id="donate">
+          <div className="container">
+            <User/>
+          </div>
+        </section>
+
+        <section id="orgs">
+          <div className="container">
+            <Orgs/>
+          </div>
+        </section>
+
+
         <footer className="text-center">
           <div className="footer-above">
             <div className="container">
               <div className="row">
                 <div className="footer-col col-md-4">
                   <h3>Location</h3>
-                  <p>3481 Melrose Place
-                    <br/>Beverly Hills, CA 90210</p>
+                  <p>Santa Rosa, CA</p>
                 </div>
                 <div className="footer-col col-md-4">
                   <h3>Around the Web</h3>
@@ -103,7 +118,7 @@ class Home extends Component {
             <div className="container">
               <div className="row">
                 <div className="col-lg-12">
-                  &copy; 2017 <a href="https://www.opszero.com">Acksin, LLC</a>
+                  Project of <a href="https://www.opszero.com">Acksin, LLC.</a> &copy; 2017
                 </div>
               </div>
             </div>

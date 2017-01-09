@@ -9,9 +9,9 @@
         "Facebook": {
             "AppID": "393012827728547",
             "AppSecret": "67468e4398532605cbe4489d530c578b",
-            "Callback": "http://nanoyak.com:3000/auth/facebook/callback"
+            "Callback": "http://nanoyak.com:8080/auth/facebook/callback"
         }
     },
-    "StripeSecretKey": "",
-    "StripePlan": ""
+    "StripeSecretKey": "sk_test_2h6rdIuloWzrCPJUz0Eg9X5q",
+    "StripePlan": "plan"
 }

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import './App.css';
 import User from './User';
 import Orgs from './Orgs';
-import Donate from './Donate';
 
 class App extends Component {
   render() {
@@ -13,9 +12,6 @@ class App extends Component {
             <h1>DonorBuddy</h1>
           </div>
         </div>
-        <User/>
-        <Donate/>
-        <Orgs/>
       </div>
     );
   }

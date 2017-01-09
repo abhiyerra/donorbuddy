@@ -16,6 +16,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 
+	"github.com/rs/cors"
+
 	"gopkg.in/pg.v5"
 )
 
@@ -94,7 +96,7 @@ func main() {
 	r.HandleFunc("/v1/orgs", searchOrgsHandler).Methods("GET")
 
 	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(createPaymentsHandler))).Methods("POST")
-	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(updatePaymentsHandler))).Methods("UPDATE")
+	//r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(updatePaymentsHandler))).Methods("UPDATE")
 	r.Handle("/v1/payments", AuthMiddleware(http.HandlerFunc(deletePaymentsHandler))).Methods("DELETE")
 	//	r.HandleFunc("/v1/payments/stripe-callback", callbackPaymentsHandler).Methods("POST")
 
@@ -103,7 +105,14 @@ func main() {
 
 	r.Handle("/v1/user", AuthMiddleware(http.HandlerFunc(showUserHandler))).Methods("GET")
 
-	http.Handle("/", handlers.LoggingHandler(os.Stdout, r))
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
+
+	http.Handle("/", handlers.LoggingHandler(os.Stdout, corsHandler.Handler(r)))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

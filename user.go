@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"gopkg.in/pg.v5/orm"
 )
 
 // User contains the information about the user who will be doing the
@@ -16,11 +18,26 @@ type User struct {
 	StripeCustomerID     string `json:"-"`
 	StripeSubscriptionID string `json:"-"`
 
+	HasSubscription bool `sql:"-"`
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
 	Orgs    []*Org    `pg:",many2many:user_orgs"`
 	Ledgers []*Ledger `pg:",many2many:ledgers"`
+}
+
+func (b *User) BeforeUpdate(db orm.DB) error {
+	b.UpdatedAt = time.Now()
+	return nil
+}
+
+func (b *User) AfterSelect(db orm.DB) error {
+	if b.StripeSubscriptionID != "" {
+		b.HasSubscription = true
+	}
+
+	return nil
 }
 
 func showUserHandler(w http.ResponseWriter, r *http.Request) {
