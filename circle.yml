@@ -9,7 +9,7 @@ dependencies:
 
 compile:
   override:
-    - docker build .
+    - docker build --rm=false -t buildleft/donorbuddy .
 
 test:
   override:
