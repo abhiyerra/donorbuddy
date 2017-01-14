@@ -1,24 +1,16 @@
 machine:
   services:
     - docker
-  environment:
-    GOPATH: /home/ubuntu/.go_workspace
-    IMPORT_PATH: github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-
-general:
-  build_dir: ../.go_workspace/src/$IMPORT_PATH
 
 dependencies:
   override:
-    - go get -u
-
-compile:
-  override:
-    - go build -o donorbuddy
+    - go get -t -d -v ./...
+    - go build -v
 
 test:
   override:
-    - go test -v ./...
+    # './...' is a relative pattern which means all subdirectories
+    - go test -v -race ./...
 
 deployment:
   master:
