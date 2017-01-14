@@ -7,6 +7,10 @@ dependencies:
     - go get -t -d -v ./...
     - go build -v
 
+compile:
+  override:
+    - docker build .
+
 test:
   override:
     # './...' is a relative pattern which means all subdirectories
@@ -16,4 +20,5 @@ deployment:
   master:
     branch: master
     commands:
-    - docker build .
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push
