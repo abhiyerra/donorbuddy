@@ -52,12 +52,12 @@ class Donate extends Component {
               </div>
             </div>
             <div className="panel-body">
-              <form role="form" id="payment-form" method="POST" action="javascript:void(0);" action={global.APIServer+"/v1/payments"}>
+              <form role="form" id="payment-form" method="POST" action={global.APIServer+"/v1/payments"}>
 
                 <div className="row">
                   <div className="col-xs-12">
                     <div className="form-group">
-                      <label for="cardNumber">Amount to Donate Per Month</label>
+                      <label for="amount">Monthly Contribution</label>
                       <div className="input-group">
                         <label class="radio-inline"><input type="radio" name="amount" value="1000" /> $10</label>
                         <label class="radio-inline"><input type="radio" name="amount" value="2000" /> $20</label>
@@ -78,7 +78,6 @@ class Donate extends Component {
                             className="form-control"
                             name="name"
                             placeholder="Name on Card"
-                            autoComplete="cc-number"
                             required autoFocus
                         />
                         <span className="input-group-addon"><i className="fa"></i></span>
@@ -97,7 +96,6 @@ class Donate extends Component {
                             className="form-control"
                             name="email"
                             placeholder="Email"
-                            autoComplete="cc-number"
                             required autoFocus
                         />
                         <span className="input-group-addon"><i className="fa"></i></span>
@@ -156,7 +154,7 @@ class Donate extends Component {
                 </div>
                 <div className="row">
                   <div className="col-xs-12">
-                    <button className="subscribe btn btn-success btn-lg btn-block" type="button">Start Donations</button>
+                    <input className="subscribe btn btn-success btn-lg btn-block submit" type="submit" value="Start Donations"/>
                   </div>
                 </div>
                 <div className="row" style={{display: "none"}}>

@@ -40,9 +40,9 @@ class Home extends Component {
                 <img className="img-responsive" src="/images/logo.png" alt=""/>
                 <div className="intro-text">
                   <hr className="star-light"/>
-                  <span className="skills">Split Your Donations to Multiple Non-Profits</span>
+                  <span className="skills">Donate to Multiple Non-Profits from a Single Monthly Contribution</span>
                   <br/>
-                  <Link className="btn btn-danger btn-lg" to={`/donate`}>Donate Now</Link>
+                  <a className="btn btn-danger btn-lg" href="/#donate">Donate Now</a>
                 </div>
               </div>
             </div>
@@ -108,8 +108,8 @@ class Home extends Component {
                   </ul>
                 </div>
                 <div className="footer-col col-md-4">
-                  <h3>About BuildLeft</h3>
-                  <p>BuildLeft provides tools for progressive causes.</p>
+                  <h3>About</h3>
+                  <p>DonorBuddy is a completely open source project sponsored by Acksin LLC. Checkout the code and help make this site better.</p>
                 </div>
               </div>
             </div>
