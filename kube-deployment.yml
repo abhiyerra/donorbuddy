@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: donorbuddy
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: donorbuddy
+    spec:
+      containers:
+      - name: donorbuddy
+        image: buildleft/donorbuddy
+        ports:
+        - containerPort: 8080

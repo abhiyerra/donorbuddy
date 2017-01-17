@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: service-in
+spec:
+  rules:
+  - host: donorbuddy.org
+    http:
+      paths:
+      - backend:
+          serviceName: donorbuddy
+          servicePort: 80

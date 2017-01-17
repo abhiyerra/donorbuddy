@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && s3cmd sync --acl-public --delete-removed --no-mime-magic --guess-mime-type build/ s3://www.donorbuddy.org/",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

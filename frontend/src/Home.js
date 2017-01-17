@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router';
 
+import logo from './Logo.png';
+
 import User from './User';
 import Orgs from './Orgs';
 
@@ -37,7 +39,7 @@ class Home extends Component {
           <div className="container">
             <div className="row">
               <div className="col-lg-12">
-                <img className="img-responsive" src="/images/logo.png" alt=""/>
+                <img className="img-responsive" src={logo} alt=""/>
                 <div className="intro-text">
                   <hr className="star-light"/>
                   <span className="skills">Donate to Multiple Non-Profits from a Single Monthly Contribution</span>
