@@ -14,3 +14,23 @@ spec:
         image: buildleft/donorbuddy
         ports:
         - containerPort: 8080
+        env:
+        - name: DONORBUDDY_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: donorbuddy-prod
+              key: donorbuddy-config
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: donorbuddy
+spec:
+  type: LoadBalancer
+  selector:
+    app: donorbuddy
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 8080

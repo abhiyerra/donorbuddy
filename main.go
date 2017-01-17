@@ -45,16 +45,23 @@ var config struct {
 }
 
 func readConfig() {
-	configFile, err := ioutil.ReadFile(os.Args[1])
-	if err != nil {
-		log.Fatal("failed to open config file", os.Args[1])
-	}
+	configEnv := os.Getenv("DONORBUDDY_CONFIG")
+	if configEnv == "" {
+		err := json.Unmarshal([]byte(configEnv), &config)
+		if err != nil {
+			log.Fatal("failed to open config file", os.Args[1])
+		}
+	} else {
+		configFile, err := ioutil.ReadFile(os.Args[1])
+		if err != nil {
+			log.Fatal("failed to open config file", os.Args[1])
+		}
 
-	err = json.Unmarshal(configFile, &config)
-	if err != nil {
-		log.Fatal("failed to open config file", os.Args[1])
+		err = json.Unmarshal(configFile, &config)
+		if err != nil {
+			log.Fatal("failed to open config file", os.Args[1])
+		}
 	}
-
 	log.Println(config)
 }
 
