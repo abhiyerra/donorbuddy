@@ -42,7 +42,7 @@ class Home extends Component {
                 <img className="img-responsive" src={logo} alt=""/>
                 <div className="intro-text">
                   <hr className="star-light"/>
-                  <span className="skills">Donate to Multiple Non-Profits from a Single Monthly Contribution</span>
+                  <span className="skills">Donate to Multiple Progressive Non-Profits from a Single Monthly Contribution</span>
                   <br/>
                   <a className="btn btn-danger btn-lg" href="/#donate">Donate Now</a>
                 </div>

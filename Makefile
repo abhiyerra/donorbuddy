@@ -17,7 +17,7 @@ dev-clean:
 	docker-compose rm
 
 dev-db-migrate:
-	bash ./migrate.sh
+	 bash ./migrate.sh
 
 dev-db-import:
 	# http://apps.irs.gov/pub/epostcard/data-download-pub78.zip
