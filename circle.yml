@@ -9,7 +9,7 @@ dependencies:
 
 compile:
   override:
-    - docker build --rm=false -t buildleft/donorbuddy .
+    - docker build --rm=false -t buildleft/donorbuddy:$CIRCLE_SHA1 .
 
 test:
   override:
