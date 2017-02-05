@@ -8,11 +8,11 @@ import Routes from './routes';
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
-if(process.env.NODE_ENV == 'development') {
+if(process.env.NODE_ENV === 'development') {
   global.APIServer = "http://nanoyak.com:8080";
   global.Stripe.setPublishableKey('pk_test_wHqW7mw8SlROUV95cvvaOUZD');
 } else {
-  global.APIServer = "http://app.donorbuddy.org";
+  global.APIServer = "https://app.donorbuddy.org";
   global.Stripe.setPublishableKey('pk_live_emXr6AKAaAGDEpKBhPRMh7UU');
 }
 
