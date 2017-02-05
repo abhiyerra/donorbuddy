@@ -15,3 +15,5 @@ CREATE TABLE orgs (
 );
 
 ALTER TABLE orgs ADD CONSTRAINT orgs_ein UNIQUE (ein);
+
+CREATE INDEX orgs_name_idx ON orgs USING GIN (to_tsvector('english', name));

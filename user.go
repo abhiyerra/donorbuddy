@@ -45,6 +45,8 @@ func showUserHandler(w http.ResponseWriter, r *http.Request) {
 		user = UserValue(r)
 	)
 
+	log.Println("Userval", user)
+
 	err := config.DB.Model(&user).Column("user.*", "Orgs").Select()
 	//.Column("ledgers.*", "Ledgers")
 	if err != nil {

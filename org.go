@@ -80,6 +80,8 @@ func searchOrgsHandler(w http.ResponseWriter, r *http.Request) {
 		search = search.Where("category = ?", category)
 	}
 
+	// select ein, name, state, city from orgs where to_tsvector('english', name) @@ plainto_tsquery('english', 'chimera');
+
 	err := search.Order("name asc").Limit(50).Select()
 	if err != nil {
 		respondJson(w, r, err)
